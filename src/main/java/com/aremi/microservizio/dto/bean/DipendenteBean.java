@@ -1,12 +1,15 @@
 package com.aremi.microservizio.dto.bean;
 
-import java.sql.Timestamp;
+import lombok.Data;
 
-public interface DipendenteBean {
-    String getNome();
-    String getCognome();
-    Timestamp getData_Di_Nascita();
-    String getEmail();
-    String getRuolo();
-    String sede_Di_Lavoro();
+import javax.xml.datatype.XMLGregorianCalendar;
+
+@Data
+public class DipendenteBean {
+    private String nome;
+    private String cognome;
+    private XMLGregorianCalendar dataDiNascita;
+    private String email;
+    private String ruolo;
+    private String sedeDiLavoro;
 }
