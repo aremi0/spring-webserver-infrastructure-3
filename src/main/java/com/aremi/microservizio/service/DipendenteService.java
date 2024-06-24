@@ -67,26 +67,23 @@ public class DipendenteService extends WebServiceGatewaySupport {
         logger.info("DipendenteService::getDipendenteBeanById response received from SAS:\n" + response);
 
         switch (response.getResponseDetail().getHttpCode()) {
-            case 200:
-            case 201:
+            case 200, 201 -> {
                 logger.info("DipendenteService::getDipendenteBeanById httpCode 200-201");
                 DipendenteBean dipendenteBean = modelMapper.map(response.getDipendente(), DipendenteBean.class);
                 finalResponse.getEntities().add(dipendenteBean);
-
-            case 401:
+            }
+            case 401 -> {
                 //TODO: handle unhautorized
                 logger.info("DipendenteService::getDipendenteBeanById httpCode 401");
-            case 500:
-            case 501:
-            case 502:
-            case 503:
-            case 504:
+            }
+            case 500, 501, 502, 503, 504 -> {
                 logger.info("DipendenteService::getDipendenteBeanById httpCode 500");
-            default:
-                finalResponse.setEntitiesNumber(response.getResponseDetail().getEntitiesNumber());
-                finalResponse.setHttpCode(response.getResponseDetail().getHttpCode());
-                finalResponse.setDescription(response.getResponseDetail().getDescription());
+            }
         }
+
+        finalResponse.setEntitiesNumber(response.getResponseDetail().getEntitiesNumber());
+        finalResponse.setHttpCode(response.getResponseDetail().getHttpCode());
+        finalResponse.setDescription(response.getResponseDetail().getDescription());
 
         logger.info("DipendenteService::getDipendenteBeanById finalResponse:\n" + finalResponse);
         return finalResponse;
