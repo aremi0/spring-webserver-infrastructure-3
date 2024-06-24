@@ -2,7 +2,7 @@ package com.aremi.microservizio.service;
 
 import com.aremi.microservizio.dto.GenericResponse;
 import com.aremi.microservizio.dto.request.GetByIdRequest;
-import com.aremi.microservizio.dto.response.GetDipendenteBySedeResponse;
+import com.aremi.microservizio.dto.response.GetDipendentiBySedeResponse;
 import com.aremi.microservizio.dto.response.GetDipendenteResponse;
 import com.aremi.microservizio.dto.bean.DipendenteBean;
 import jakarta.xml.bind.JAXBElement;
@@ -89,11 +89,11 @@ public class DipendenteService extends WebServiceGatewaySupport {
         return finalResponse;
     }
 
-    public GenericResponse<DipendenteBean> getDipendenteBeanByIdSede(Long idSede) {
-        logger.info("DipendenteService::getDipendenteBeanByIdSede service started...");
+    public GenericResponse<DipendenteBean> getDipendentiBeanByIdSede(Long idSede) {
+        logger.info("DipendenteService::getDipendentiBeanByIdSede service started...");
         GenericResponse<DipendenteBean> finalResponse = new GenericResponse<>();
 
-        logger.info("DipendenteService::getDipendenteBeanByIdSede starting to build the SOAP request");
+        logger.info("DipendenteService::getDipendentiBeanByIdSede starting to build the SOAP request");
         GetByIdRequest request = new GetByIdRequest();
         request.setId(idSede);
 
@@ -104,30 +104,30 @@ public class DipendenteService extends WebServiceGatewaySupport {
         try {
             StringResult result = new StringResult();
             getWebServiceTemplate().getMarshaller().marshal(jaxbElement, result);
-            logger.info("DipendenteService::getDipendenteBeanByIdSede XML Request body:\n" + result);
+            logger.info("DipendenteService::getDipendentiBeanByIdSede XML Request body:\n" + result);
         } catch (XmlMappingException | IOException e) {
-            logger.info("DipendenteService::getDipendenteBeanByIdSede errore:\n" + e);
+            logger.info("DipendenteService::getDipendentiBeanByIdSede errore:\n" + e);
         }
 
         // Effettua la chiamata SOAP
-        GetDipendenteBySedeResponse response = (GetDipendenteBySedeResponse) getWebServiceTemplate()
+        GetDipendentiBySedeResponse response = (GetDipendentiBySedeResponse) getWebServiceTemplate()
                 .marshalSendAndReceive("http://simulatore-sas:8081/ws", jaxbElement,
                         new SoapActionCallback("http://simulatore-sas:8081/ws"));
 
-        logger.info("DipendenteService::getDipendenteBeanByIdSede response received from SAS:\n" + response);
+        logger.info("DipendenteService::getDipendentiBeanByIdSede response received from SAS:\n" + response);
 
         switch (response.getResponseDetail().getHttpCode()) {
             case 200, 201 -> {
-                logger.info("DipendenteService::getDipendenteBeanByIdSede httpCode 200-201");
-                DipendenteBean dipendenteBean = modelMapper.map(response.getDipendente(), DipendenteBean.class);
+                logger.info("DipendenteService::getDipendentiBeanByIdSede httpCode 200-201");
+                DipendenteBean dipendenteBean = modelMapper.map(response.getDipendenti(), DipendenteBean.class);
                 finalResponse.getEntities().add(dipendenteBean);
             }
             case 401 -> {
                 //TODO: handle unhautorized
-                logger.info("DipendenteService::getDipendenteBeanByIdSede httpCode 401");
+                logger.info("DipendenteService::getDipendentiBeanByIdSede httpCode 401");
             }
             case 500, 501, 502, 503, 504 -> {
-                logger.info("DipendenteService::getDipendenteBeanByIdSede httpCode 500");
+                logger.info("DipendenteService::getDipendentiBeanByIdSede httpCode 500");
             }
         }
 
@@ -135,7 +135,7 @@ public class DipendenteService extends WebServiceGatewaySupport {
         finalResponse.setHttpCode(response.getResponseDetail().getHttpCode());
         finalResponse.setDescription(response.getResponseDetail().getDescription());
 
-        logger.info("DipendenteService::getDipendenteBeanById finalResponse:\n" + finalResponse);
+        logger.info("DipendenteService::getDipendentiBeanByIdSede finalResponse:\n" + finalResponse);
         return finalResponse;
     }
 }

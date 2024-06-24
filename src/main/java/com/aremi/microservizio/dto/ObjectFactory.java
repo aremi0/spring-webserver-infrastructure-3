@@ -1,7 +1,7 @@
 package com.aremi.microservizio.dto;
 
 import com.aremi.microservizio.dto.request.GetByIdRequest;
-import com.aremi.microservizio.dto.response.GetDipendenteBySedeResponse;
+import com.aremi.microservizio.dto.response.GetDipendentiBySedeResponse;
 import com.aremi.microservizio.dto.response.GetDipendenteResponse;
 import jakarta.xml.bind.annotation.XmlRegistry;
 import lombok.NoArgsConstructor;
@@ -26,8 +26,8 @@ public class ObjectFactory {
         return new GetDipendenteResponse();
     }
 
-    public GetDipendenteBySedeResponse createGetDipendenteBySedeResponse() {
-        return new GetDipendenteBySedeResponse();
+    public GetDipendentiBySedeResponse createGetDipendentiBySedeResponse() {
+        return new GetDipendentiBySedeResponse();
     }
 
     // TODO: Aggiungi altri metodi create per altre classi se necessario
