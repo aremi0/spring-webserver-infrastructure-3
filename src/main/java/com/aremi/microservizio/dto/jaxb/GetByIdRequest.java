@@ -1,4 +1,4 @@
-package com.aremi.microservizio.dto.request;
+package com.aremi.microservizio.dto.jaxb;
 
 import jakarta.xml.bind.annotation.*;
 import lombok.Data;

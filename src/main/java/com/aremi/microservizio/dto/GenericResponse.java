@@ -1,7 +1,6 @@
 package com.aremi.microservizio.dto;
 
 import lombok.Data;
-import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.List;

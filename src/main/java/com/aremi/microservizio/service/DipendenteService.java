@@ -1,9 +1,9 @@
 package com.aremi.microservizio.service;
 
 import com.aremi.microservizio.dto.GenericResponse;
-import com.aremi.microservizio.dto.request.GetByIdRequest;
-import com.aremi.microservizio.dto.response.GetDipendentiBySedeResponse;
-import com.aremi.microservizio.dto.response.GetDipendenteResponse;
+import com.aremi.microservizio.dto.jaxb.GetByIdRequest;
+import com.aremi.microservizio.dto.jaxb.GetDipendentiByIdSedeResponse;
+import com.aremi.microservizio.dto.jaxb.GetDipendenteResponse;
 import com.aremi.microservizio.dto.bean.DipendenteBean;
 import jakarta.xml.bind.JAXBElement;
 import org.modelmapper.ModelMapper;
@@ -27,7 +27,7 @@ public class DipendenteService extends WebServiceGatewaySupport {
         logger = Logger.getLogger("DipendenteService_Logger");
 
         marshaller = new Jaxb2Marshaller();
-        marshaller.setContextPath("com.aremi.microservizio.dto"); //Serve per dichiarare a JAXB e al marshaller dove troverà l'ObjectFactory e le classi Request/Respose che mapperà
+        marshaller.setContextPath("com.aremi.microservizio.dto.jaxb"); //Serve per dichiarare a JAXB e al marshaller dove troverà l'ObjectFactory e le classi Request/Respose che mapperà
 
         // Imposta il marshaller e l'unmarshaller per il WebServiceTemplate
         getWebServiceTemplate().setMarshaller(marshaller); // Marshaller: xml to java-class
@@ -56,7 +56,7 @@ public class DipendenteService extends WebServiceGatewaySupport {
             getWebServiceTemplate().getMarshaller().marshal(jaxbElement, result);
             logger.info("DipendenteService::getDipendenteBeanById XML Request body:\n" + result);
         } catch (XmlMappingException | IOException e) {
-            logger.info("DipendenteService::getDipendenteBeanById errore:\n" + e.getMessage());
+            logger.info("DipendenteService::getDipendenteBeanById errore:\n" + e.getStackTrace());
         }
 
         // Effettua la chiamata SOAP
@@ -106,11 +106,11 @@ public class DipendenteService extends WebServiceGatewaySupport {
             getWebServiceTemplate().getMarshaller().marshal(jaxbElement, result);
             logger.info("DipendenteService::getDipendentiBeanByIdSede XML Request body:\n" + result);
         } catch (XmlMappingException | IOException e) {
-            logger.info("DipendenteService::getDipendentiBeanByIdSede errore:\n" + e);
+            logger.info("DipendenteService::getDipendentiBeanByIdSede errore:\n" + e.getStackTrace());
         }
 
         // Effettua la chiamata SOAP
-        GetDipendentiBySedeResponse response = (GetDipendentiBySedeResponse) getWebServiceTemplate()
+        GetDipendentiByIdSedeResponse response = (GetDipendentiByIdSedeResponse) getWebServiceTemplate()
                 .marshalSendAndReceive("http://simulatore-sas:8081/ws", jaxbElement,
                         new SoapActionCallback("http://simulatore-sas:8081/ws"));
 
@@ -119,8 +119,10 @@ public class DipendenteService extends WebServiceGatewaySupport {
         switch (response.getResponseDetail().getHttpCode()) {
             case 200, 201 -> {
                 logger.info("DipendenteService::getDipendentiBeanByIdSede httpCode 200-201");
-                DipendenteBean dipendenteBean = modelMapper.map(response.getDipendenti(), DipendenteBean.class);
-                finalResponse.getEntities().add(dipendenteBean);
+                for (var entity : response.getDipendenti()) {
+                    DipendenteBean tmp = modelMapper.map(entity, DipendenteBean.class);
+                    finalResponse.getEntities().add(tmp);
+                }
             }
             case 401 -> {
                 //TODO: handle unhautorized
