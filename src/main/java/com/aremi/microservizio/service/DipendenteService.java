@@ -1,8 +1,9 @@
 package com.aremi.microservizio.service;
 
 import com.aremi.microservizio.dto.GenericResponse;
-import com.aremi.microservizio.dto.GetByIdRequest;
-import com.aremi.microservizio.dto.GetDipendenteResponse;
+import com.aremi.microservizio.dto.request.GetByIdRequest;
+import com.aremi.microservizio.dto.response.GetDipendenteBySedeResponse;
+import com.aremi.microservizio.dto.response.GetDipendenteResponse;
 import com.aremi.microservizio.dto.bean.DipendenteBean;
 import jakarta.xml.bind.JAXBElement;
 import org.modelmapper.ModelMapper;
@@ -63,7 +64,6 @@ public class DipendenteService extends WebServiceGatewaySupport {
                 .marshalSendAndReceive("http://simulatore-sas:8081/ws", jaxbElement,
                         new SoapActionCallback("http://simulatore-sas:8081/ws"));
 
-        // TODO: Converte la risposta SOAP in un oggetto DipendenteBean
         logger.info("DipendenteService::getDipendenteBeanById response received from SAS:\n" + response);
 
         switch (response.getResponseDetail().getHttpCode()) {
@@ -78,6 +78,56 @@ public class DipendenteService extends WebServiceGatewaySupport {
             }
             case 500, 501, 502, 503, 504 -> {
                 logger.info("DipendenteService::getDipendenteBeanById httpCode 500");
+            }
+        }
+
+        finalResponse.setEntitiesNumber(response.getResponseDetail().getEntitiesNumber());
+        finalResponse.setHttpCode(response.getResponseDetail().getHttpCode());
+        finalResponse.setDescription(response.getResponseDetail().getDescription());
+
+        logger.info("DipendenteService::getDipendenteBeanById finalResponse:\n" + finalResponse);
+        return finalResponse;
+    }
+
+    public GenericResponse<DipendenteBean> getDipendenteBeanByIdSede(Long idSede) {
+        logger.info("DipendenteService::getDipendenteBeanByIdSede service started...");
+        GenericResponse<DipendenteBean> finalResponse = new GenericResponse<>();
+
+        logger.info("DipendenteService::getDipendenteBeanByIdSede starting to build the SOAP request");
+        GetByIdRequest request = new GetByIdRequest();
+        request.setId(idSede);
+
+        QName qName = new QName("http://example/infrastructure/sas-simulation-webservice", "getDipendentiByIdSedeRequest");
+        JAXBElement<GetByIdRequest> jaxbElement = new JAXBElement<>(qName, GetByIdRequest.class, request);
+
+        // Stringo e mappo l'xml della request in una stringa e la stampo sul log per verifica
+        try {
+            StringResult result = new StringResult();
+            getWebServiceTemplate().getMarshaller().marshal(jaxbElement, result);
+            logger.info("DipendenteService::getDipendenteBeanByIdSede XML Request body:\n" + result);
+        } catch (XmlMappingException | IOException e) {
+            logger.info("DipendenteService::getDipendenteBeanByIdSede errore:\n" + e);
+        }
+
+        // Effettua la chiamata SOAP
+        GetDipendenteBySedeResponse response = (GetDipendenteBySedeResponse) getWebServiceTemplate()
+                .marshalSendAndReceive("http://simulatore-sas:8081/ws", jaxbElement,
+                        new SoapActionCallback("http://simulatore-sas:8081/ws"));
+
+        logger.info("DipendenteService::getDipendenteBeanByIdSede response received from SAS:\n" + response);
+
+        switch (response.getResponseDetail().getHttpCode()) {
+            case 200, 201 -> {
+                logger.info("DipendenteService::getDipendenteBeanByIdSede httpCode 200-201");
+                DipendenteBean dipendenteBean = modelMapper.map(response.getDipendente(), DipendenteBean.class);
+                finalResponse.getEntities().add(dipendenteBean);
+            }
+            case 401 -> {
+                //TODO: handle unhautorized
+                logger.info("DipendenteService::getDipendenteBeanByIdSede httpCode 401");
+            }
+            case 500, 501, 502, 503, 504 -> {
+                logger.info("DipendenteService::getDipendenteBeanByIdSede httpCode 500");
             }
         }
 

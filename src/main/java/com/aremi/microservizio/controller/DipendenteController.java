@@ -28,4 +28,10 @@ public class DipendenteController {
         logger.info("RestController::getDipendenteById REST request received with ID: " + id);
         return dipendenteService.getDipendenteBeanById(id);
     }
+
+    @GetMapping("/dipendentiBySede/{id_sede}")
+    GenericResponse<DipendenteBean> getDipendentiByIdSede(@PathVariable("id_sede") Long idSede) {
+        logger.info("RestController::getDipendentiByIdSede REST request received with ID: " + idSede);
+        return dipendenteService.getDipendenteBeanByIdSede(idSede);
+    }
 }
