@@ -1,16 +1,14 @@
 package com.aremi.microservizio.security;
 
 import com.aremi.microservizio.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
 
 /***
@@ -22,9 +20,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtAuthenticationProvider implements AuthenticationProvider {
     private final UserService userService;
+    private final Logger logger;
 
-    public JwtAuthenticationProvider(@Lazy UserService userService) {
+    public JwtAuthenticationProvider( UserService userService) {
         this.userService = userService;
+        this.logger = LoggerFactory.getLogger("JwtAuthenticationProvider_Logger");
     }
 
     /***
@@ -38,11 +38,15 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         String username = authentication.getName();
         String password = (String) authentication.getCredentials();
 
+        logger.debug("JwtAuthenticationProvider::authenticate retriving user information from DB.");
         UserDetails user = userService.loadUserByUsername(username);
 
+        logger.debug("JwtAuthenticationProvider::authenticate comparing password");
         if (password.equalsIgnoreCase(user.getPassword())) {
+            logger.debug("JwtAuthenticationProvider::authenticate success! logging in...");
             return new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());
         } else {
+            logger.debug("JwtAuthenticationProvider::authenticate failed! wrong password.");
             return null;
         }
     }

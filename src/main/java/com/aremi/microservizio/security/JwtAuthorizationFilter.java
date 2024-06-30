@@ -6,6 +6,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,10 +32,12 @@ import java.util.Objects;
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private final JwtTokenUtil jwtTokenUtil;
     private final UserService userService;
+    private Logger logger;
 
     public JwtAuthorizationFilter(JwtTokenUtil jwtTokenUtil, UserService userService) {
         this.jwtTokenUtil = jwtTokenUtil;
         this.userService = userService;
+        this.logger = LoggerFactory.getLogger("JwtAuthorizationFilter_Logger");
     }
 
     @Override

@@ -9,7 +9,7 @@ public class MicroservizioApplication {
     private static ApplicationContext applicationContext;
     public static void main(String[] args) {
         applicationContext = SpringApplication.run(MicroservizioApplication.class, args);
-        displayAllBeans();
+        //displayAllBeans();
     }
 
     public static void displayAllBeans() {

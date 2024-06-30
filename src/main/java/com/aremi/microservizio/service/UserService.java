@@ -1,14 +1,10 @@
 package com.aremi.microservizio.service;
 
-import com.aremi.microservizio.dto.GenericResponse;
-import com.aremi.microservizio.dto.bean.UtenteBean;
 import com.aremi.microservizio.dto.jaxb.GetUtenteByEmailRequest;
 import com.aremi.microservizio.dto.jaxb.GetUtenteResponse;
 import com.aremi.microservizio.dto.jaxb.Utente;
-import com.aremi.microservizio.security.JwtTokenUtil;
 import jakarta.xml.bind.JAXBElement;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.oxm.XmlMappingException;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.security.core.userdetails.User;
@@ -23,7 +19,8 @@ import org.springframework.xml.transform.StringResult;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class UserService extends WebServiceGatewaySupport implements UserDetailsService {
@@ -33,7 +30,7 @@ public class UserService extends WebServiceGatewaySupport implements UserDetails
    // private final PasswordEncoder passwordEncoder;
 
     public UserService() {
-        logger = Logger.getLogger("UserService_Logger");
+        logger = LoggerFactory.getLogger("UserService_Logger");
         //this.passwordEncoder = passwordEncoder;
 
         marshaller = new Jaxb2Marshaller();
@@ -59,7 +56,7 @@ public class UserService extends WebServiceGatewaySupport implements UserDetails
         QName qName = new QName("http://example/infrastructure/sas-simulation-webservice", "getUtenteByEmailRequest");
         JAXBElement<GetUtenteByEmailRequest> jaxbElement = new JAXBElement<>(qName, GetUtenteByEmailRequest.class, request);
 
-        logger.info("UserService::loadUserByUsername sending SOAP to SAS with request Username/Email:" + request.getEmailUtente());
+        logger.info("UserService::loadUserByUsername sending SOAP to SAS with request Username/Email: " + request.getEmailUtente());
 
         // Stringo e mappo l'xml della request in una stringa e la stampo sul log per verifica
         try {
