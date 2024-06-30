@@ -1,6 +1,6 @@
 package com.aremi.microservizio.security;
 
-import com.aremi.microservizio.service.UserService;
+import com.aremi.microservizio.service.UtenteService;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,9 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -31,12 +29,12 @@ import java.util.Objects;
 @Component
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private final JwtTokenUtil jwtTokenUtil;
-    private final UserService userService;
+    private final UtenteService utenteService;
     private Logger logger;
 
-    public JwtAuthorizationFilter(JwtTokenUtil jwtTokenUtil, UserService userService) {
+    public JwtAuthorizationFilter(JwtTokenUtil jwtTokenUtil, UtenteService utenteService) {
         this.jwtTokenUtil = jwtTokenUtil;
-        this.userService = userService;
+        this.utenteService = utenteService;
         this.logger = LoggerFactory.getLogger("JwtAuthorizationFilter_Logger");
     }
 
@@ -56,7 +54,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             String jwtToken = header.substring(7);
             String username = jwtTokenUtil.getUsernameFromToken(jwtToken);
 
-            if(!Objects.isNull(username) && jwtTokenUtil.validateToken(jwtToken, userService.loadUserByUsername(username))) {
+            if(!Objects.isNull(username) && jwtTokenUtil.validateToken(jwtToken, utenteService.loadUserByUsername(username))) {
                 // Se il token è valido, aggiungi l'username al SecurityContext
                 SecurityContextHolder.getContext().setAuthentication(new PreAuthenticatedAuthenticationToken(username, null));
             }

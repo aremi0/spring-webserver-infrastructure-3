@@ -23,14 +23,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Service
-public class UserService extends WebServiceGatewaySupport implements UserDetailsService {
+public class UtenteService extends WebServiceGatewaySupport implements UserDetailsService {
     private final Logger logger;
     private final Jaxb2Marshaller marshaller;
     private final ModelMapper modelMapper;
    // private final PasswordEncoder passwordEncoder;
 
-    public UserService() {
-        logger = LoggerFactory.getLogger("UserService_Logger");
+    public UtenteService() {
+        logger = LoggerFactory.getLogger("UtenteService_Logger");
         //this.passwordEncoder = passwordEncoder;
 
         marshaller = new Jaxb2Marshaller();
@@ -49,22 +49,22 @@ public class UserService extends WebServiceGatewaySupport implements UserDetails
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Utente user = null;
 
-        logger.info("UserService::loadUserByUsername starting to build the SOAP request");
+        logger.info("UtenteService::loadUserByUsername starting to build the SOAP request");
         GetUtenteByEmailRequest request = new GetUtenteByEmailRequest();
         request.setEmailUtente(username);
 
         QName qName = new QName("http://example/infrastructure/sas-simulation-webservice", "getUtenteByEmailRequest");
         JAXBElement<GetUtenteByEmailRequest> jaxbElement = new JAXBElement<>(qName, GetUtenteByEmailRequest.class, request);
 
-        logger.info("UserService::loadUserByUsername sending SOAP to SAS with request Username/Email: " + request.getEmailUtente());
+        logger.info("UtenteService::loadUserByUsername sending SOAP to SAS with request Username/Email: " + request.getEmailUtente());
 
         // Stringo e mappo l'xml della request in una stringa e la stampo sul log per verifica
         try {
             StringResult result = new StringResult();
             getWebServiceTemplate().getMarshaller().marshal(jaxbElement, result);
-            logger.info("UserService::loadUserByUsername XML Request body:\n" + result);
+            logger.info("UtenteService::loadUserByUsername XML Request body:\n" + result);
         } catch (XmlMappingException | IOException e) {
-            logger.info("UserService::loadUserByUsername errore:\n" + e.getStackTrace());
+            logger.info("UtenteService::loadUserByUsername errore:\n" + e.getStackTrace());
         }
 
         // Effettua la chiamata SOAP
@@ -72,19 +72,19 @@ public class UserService extends WebServiceGatewaySupport implements UserDetails
                 .marshalSendAndReceive("http://simulatore-sas:8081/ws", jaxbElement,
                         new SoapActionCallback("http://simulatore-sas:8081/ws"));
 
-        logger.info("UserService::loadUserByUsername response received from SAS:\n" + response);
+        logger.info("UtenteService::loadUserByUsername response received from SAS:\n" + response);
 
         switch (response.getResponseDetail().getHttpCode()) {
             case 200, 201 -> {
-                logger.info("UserService::loadUserByUsername httpCode 200-201");
+                logger.info("UtenteService::loadUserByUsername httpCode 200-201");
                 user = modelMapper.map(response.getUtente(), Utente.class);
             }
             case 401 -> {
                 //TODO: handle unhautorized
-                logger.info("UserService::loadUserByUsername httpCode 401");
+                logger.info("UtenteService::loadUserByUsername httpCode 401");
             }
             case 500, 501, 502, 503, 504 -> {
-                logger.info("UserService::loadUserByUsername httpCode 500");
+                logger.info("UtenteService::loadUserByUsername httpCode 500");
             }
         }
 

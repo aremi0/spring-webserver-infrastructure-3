@@ -1,6 +1,6 @@
 package com.aremi.microservizio.security;
 
-import com.aremi.microservizio.service.UserService;
+import com.aremi.microservizio.service.UtenteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,9 +26,9 @@ public class SecurityConfig {
     private JwtAuthenticationProvider jwtAuthenticationProvider;
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth,
-                                UserService userService) throws Exception {
+                                UtenteService utenteService) throws Exception {
         //auth.userDetailsService(userService).passwordEncoder(passwordEncoder());
-        auth.userDetailsService(userService);
+        auth.userDetailsService(utenteService);
         auth.authenticationProvider(jwtAuthenticationProvider);
     }
 

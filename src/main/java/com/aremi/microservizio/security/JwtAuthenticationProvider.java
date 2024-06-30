@@ -1,9 +1,8 @@
 package com.aremi.microservizio.security;
 
-import com.aremi.microservizio.service.UserService;
+import com.aremi.microservizio.service.UtenteService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,11 +18,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JwtAuthenticationProvider implements AuthenticationProvider {
-    private final UserService userService;
+    private final UtenteService utenteService;
     private final Logger logger;
 
-    public JwtAuthenticationProvider( UserService userService) {
-        this.userService = userService;
+    public JwtAuthenticationProvider( UtenteService utenteService) {
+        this.utenteService = utenteService;
         this.logger = LoggerFactory.getLogger("JwtAuthenticationProvider_Logger");
     }
 
@@ -39,7 +38,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         String password = (String) authentication.getCredentials();
 
         logger.debug("JwtAuthenticationProvider::authenticate retriving user information from DB.");
-        UserDetails user = userService.loadUserByUsername(username);
+        UserDetails user = utenteService.loadUserByUsername(username);
 
         logger.debug("JwtAuthenticationProvider::authenticate comparing password");
         if (password.equalsIgnoreCase(user.getPassword())) {
