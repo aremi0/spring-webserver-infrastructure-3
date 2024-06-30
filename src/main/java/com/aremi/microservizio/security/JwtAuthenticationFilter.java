@@ -28,14 +28,14 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
     public JwtAuthenticationFilter(AuthenticationManager authManager) {
         this.authManager = authManager;
-        this.logger = LoggerFactory.getLogger("JwtAuthenticationFilter_Logger");
+        this.logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     }
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try {
             // Deserializza il JSON della richiesta in un oggetto UtenteBean
-            logger.debug("JwtAuthenticationFilter::attemptAuthentication deserializzo il JSON dalla request.");
+            logger.debug("JwtAuthenticationFilter::attemptAuthentication started... deserializzo il JSON dalla request.");
             UtenteBean user = new ObjectMapper().readValue(request.getInputStream(), UtenteBean.class);
 
             // Crea un oggetto UsernamePasswordAuthenticationToken con le credenziali dell'utente

@@ -23,7 +23,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
 
     public JwtAuthenticationProvider( UtenteService utenteService) {
         this.utenteService = utenteService;
-        this.logger = LoggerFactory.getLogger("JwtAuthenticationProvider_Logger");
+        this.logger = LoggerFactory.getLogger(JwtAuthenticationProvider.class);
     }
 
     /***

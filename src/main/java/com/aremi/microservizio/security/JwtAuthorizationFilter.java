@@ -8,12 +8,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Objects;
 
 /***
@@ -35,17 +38,19 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     public JwtAuthorizationFilter(JwtTokenUtil jwtTokenUtil, UtenteService utenteService) {
         this.jwtTokenUtil = jwtTokenUtil;
         this.utenteService = utenteService;
-        this.logger = LoggerFactory.getLogger("JwtAuthorizationFilter_Logger");
+        this.logger = LoggerFactory.getLogger(JwtAuthorizationFilter.class);
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        logger.debug("JwtAuthorization::doFilterInternal started, extracting Authorization header from request");
+
         final String header = request.getHeader("Authorization");
 
         if(Objects.isNull(header) || !header.startsWith("Bearer ")) {
-            logger.warn("JWT Token does not begin with Bearer String");
+            logger.warn("JwtAuthorization::doFilterInternal JWT Token does not begin with Bearer String");
             filterChain.doFilter(request, response);
             return;
         }
@@ -53,17 +58,37 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         try {
             String jwtToken = header.substring(7);
             String username = jwtTokenUtil.getUsernameFromToken(jwtToken);
+            logger.debug("JwtAuthorization::doFilterInternal ottenuto username dal token: " + username);
 
-            if(!Objects.isNull(username) && jwtTokenUtil.validateToken(jwtToken, utenteService.loadUserByUsername(username))) {
+            UserDetails userDetails = utenteService.loadUserByUsername(username);
+
+            if(!Objects.isNull(username) && jwtTokenUtil.validateToken(jwtToken, userDetails)) {
                 // Se il token è valido, aggiungi l'username al SecurityContext
-                SecurityContextHolder.getContext().setAuthentication(new PreAuthenticatedAuthenticationToken(username, null));
+                logger.debug("JwtAuthorization::doFilterInternal il il token è valido, inserisco utente nel SecurityContext.");
+
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        username, null, userDetails.getAuthorities());
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                onAuthenticationSuccess(jwtToken, response);
+            } else {
+                logger.warn("JwtAuthorization::doFilterInternal il token non valido o validazione non riuscita");
             }
         } catch (IllegalArgumentException e) {
-            logger.warn("Unable to get JWT Token");
+            logger.warn("JwtAuthorization::doFilterInternalil Unable to get JWT Token");
         } catch (ExpiredJwtException e) {
-            logger.warn("JWT Token has expired");
+            logger.warn("JwtAuthorization::doFilterInternalil JWT Token has expired");
         } finally {
             filterChain.doFilter(request, response);
         }
+    }
+
+    protected void onAuthenticationSuccess(String jwtToken, HttpServletResponse response) {
+        logger.debug("JwtAuthorization::onAuthenticationSuccess l'autenticazione del login ha avuto successo!\nInserisco jwtToken e ExpirationDate in response header.");
+        Date expirationDate = jwtTokenUtil.getExpirationDateFromToken(jwtToken);
+
+        // Invia il token nella risposta HTTP
+        response.addHeader("Authorization", "Bearer " + jwtToken);
+        response.addHeader("JWT-Expiration-Date", expirationDate.toString());
     }
 }
