@@ -43,7 +43,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
         logger.debug("JwtAuthenticationProvider::authenticate comparing password");
         if (password.equalsIgnoreCase(user.getPassword())) {
             logger.debug("JwtAuthenticationProvider::authenticate success! logging in...");
-            return new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities());
+            return new UsernamePasswordAuthenticationToken(user, password, user.getAuthorities()); // Le authorities() si riferiscono alle autorita prese dalla colonna "autorita" nella tabella "Utente"
         } else {
             logger.debug("JwtAuthenticationProvider::authenticate failed! wrong password.");
             return null;

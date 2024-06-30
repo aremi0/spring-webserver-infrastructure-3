@@ -67,7 +67,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 logger.debug("JwtAuthorization::doFilterInternal il il token è valido, inserisco utente nel SecurityContext.");
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        username, null, userDetails.getAuthorities());
+                        username, null, userDetails.getAuthorities()); // Le authorities() si riferiscono alle autorita prese dalla colonna "autorita" nella tabella "Utente"
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 onAuthenticationSuccess(jwtToken, response);
