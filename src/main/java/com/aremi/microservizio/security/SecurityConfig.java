@@ -1,5 +1,6 @@
 package com.aremi.microservizio.security;
 
+import com.aremi.microservizio.exception.CustomAccessDeniedHandler;
 import com.aremi.microservizio.service.UtenteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.ExceptionTranslationFilter;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
@@ -49,20 +52,29 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   @Autowired CustomAccessDeniedHandler customAccessDeniedHandler,
+                                                   @Autowired CustomAuthorizationManager customAuthorizationManager,
                                                    @Autowired JwtAuthorizationFilter jwtAuthorizationFilter,
                                                    @Autowired JwtAuthenticationSuccessHandler jwtAuthenticationSuccessHandler) throws Exception {
+        /***
+         * 1. Solo gli utenti che da DB hanno autorita "lettura" potranno accedere a tale risorsa.
+         * 2. Il mio AuthorizationManager customizzato per verificare le autorita degli utenti autenticati con le
+         * autorita necessarie alla risorsa richiesta.
+         * 3. Il mio AccessDeniedhandler customizzato viene aggiunto alla fine della catena.
+         */
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/login").permitAll()
-                        .requestMatchers(new AntPathRequestMatcher("/api/dipendentiBySede/**")).hasAnyAuthority("lettura") // Solo gli utenti che da DB hanno autorita "lettura" potranno accedere a tale risorsa
+                        .requestMatchers(new AntPathRequestMatcher("/api/dipendentiBySede/**")).access(customAuthorizationManager)
                         .anyRequest().authenticated())
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
                 .sessionManagement(sessionManagment ->
-                        sessionManagment.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
+                        sessionManagment.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(excHandlerConfigurer ->
+                        excHandlerConfigurer.accessDeniedHandler(customAccessDeniedHandler));
 
         /***
          * E' necessario che questo filtro non sia un bean perchè nonostante tutti i miei sforzi non sono riusito a garentire

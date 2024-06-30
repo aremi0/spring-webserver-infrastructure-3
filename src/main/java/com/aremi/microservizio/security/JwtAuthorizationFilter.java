@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -64,7 +63,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
             if(!Objects.isNull(username) && jwtTokenUtil.validateToken(jwtToken, userDetails)) {
                 // Se il token è valido, aggiungi l'username al SecurityContext
-                logger.debug("JwtAuthorization::doFilterInternal il il token è valido, inserisco utente nel SecurityContext.");
+                logger.debug("JwtAuthorization::doFilterInternal il token è valido, inserisco utente nel SecurityContext.");
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         username, null, userDetails.getAuthorities()); // Le authorities() si riferiscono alle autorita prese dalla colonna "autorita" nella tabella "Utente"
@@ -75,9 +74,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 logger.warn("JwtAuthorization::doFilterInternal il token non valido o validazione non riuscita");
             }
         } catch (IllegalArgumentException e) {
-            logger.warn("JwtAuthorization::doFilterInternalil Unable to get JWT Token");
+            logger.warn("JwtAuthorization::doFilterInternal Unable to get JWT Token");
         } catch (ExpiredJwtException e) {
-            logger.warn("JwtAuthorization::doFilterInternalil JWT Token has expired");
+            logger.warn("JwtAuthorization::doFilterInternal JWT Token has expired");
         } finally {
             filterChain.doFilter(request, response);
         }
