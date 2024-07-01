@@ -17,26 +17,24 @@ import java.util.function.Supplier;
 @Component
 public class CustomAuthorizationManager implements AuthorizationManager<RequestAuthorizationContext> {
     private final RequestMatcher protectedResource = new AntPathRequestMatcher("/api/dipendentiBySede/**");
-    private final String requiredAuthority = "lettura";
+    private final String requiredAuthority = "superuser";
     private Logger logger = LoggerFactory.getLogger(CustomAuthorizationManager.class);
     @Override
     public AuthorizationDecision check(Supplier<Authentication> authentication, RequestAuthorizationContext  context) {
-        logger.debug("CustomAuthorizationManager::check started...");
-
         Authentication auth = authentication.get();
         HttpServletRequest request = context.getRequest();
 
-        logger.debug("CustomAuthorizationManager::check user authorities: " + auth.getAuthorities());
+        logger.debug("CustomAuthorizationManager::check listing user authorities: " + auth.getAuthorities());
 
         if(!protectedResource.matches(request)) {
             // Se la risorsa non è protetta, concedi l'accesso
-            logger.debug("CustomAuthorizationManager::check la risorsa non è protetta, permetto ingresso:\n" + request);
+            logger.debug("CustomAuthorizationManager::check la risorsa non è protetta, ingresso permesso:\n" + request);
             return new AuthorizationDecision(true);
         }
 
         // Controlla se l'utente ha l'autorità richiesta
         boolean hasAuthority = auth.getAuthorities().stream()
-                .anyMatch(grantedAuthority -> requiredAuthority.equals(grantedAuthority.getAuthority()));
+                .anyMatch(userAuthorities -> requiredAuthority.equalsIgnoreCase(userAuthorities.getAuthority()));
 
         if(!hasAuthority) {
             // Se l'utente non ha l'autorità richiesta, nega l'accesso e lancia un'eccezione
@@ -48,6 +46,7 @@ public class CustomAuthorizationManager implements AuthorizationManager<RequestA
         }
 
         // Altrimenti, concedi l'accesso
+        logger.debug("CustomAuthorizationManager::check Permission granted, resource unlocked");
         return new AuthorizationDecision(true);
     }
 }

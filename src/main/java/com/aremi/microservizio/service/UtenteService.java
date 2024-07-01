@@ -7,6 +7,8 @@ import jakarta.xml.bind.JAXBElement;
 import org.modelmapper.ModelMapper;
 import org.springframework.oxm.XmlMappingException;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,7 +20,9 @@ import org.springframework.xml.transform.StringResult;
 
 import javax.xml.namespace.QName;
 import java.io.IOException;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +52,7 @@ public class UtenteService extends WebServiceGatewaySupport implements UserDetai
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Utente user = null;
+        List<GrantedAuthority> authoritiesList = null;
 
         logger.debug("UtenteService::loadUserByUsername starting to build the SOAP request");
         GetUtenteByEmailRequest request = new GetUtenteByEmailRequest();
@@ -77,6 +82,16 @@ public class UtenteService extends WebServiceGatewaySupport implements UserDetai
         switch (response.getResponseDetail().getHttpCode()) {
             case 200, 201 -> {
                 logger.debug("UtenteService::loadUserByUsername httpCode 200-201");
+                String[] roles = response.getUtente().getAutorita().split(", ");
+                if(response.getUtente().getAutorita().isEmpty() || response.getUtente().getAutorita().isBlank()) {
+                    // caso in cui il DB mi ritorna ""
+                    authoritiesList = Collections.singletonList(new SimpleGrantedAuthority("default"));
+                } else {
+                    // caso in cui il DB mi torna "valore1, valore2, ..." o anche "valore1"
+                    authoritiesList = Arrays.stream(roles)
+                            .map(SimpleGrantedAuthority::new)
+                            .collect(Collectors.toList());
+                }
                 user = modelMapper.map(response.getUtente(), Utente.class);
             }
             case 401 -> {
@@ -94,7 +109,7 @@ public class UtenteService extends WebServiceGatewaySupport implements UserDetai
             // Crea e restituisci un oggetto UserDetails
             return User.withUsername(user.getEmail())
                     .password(user.getPassword())
-                    .authorities(user.getAutorita()) // Aggiungi qui i ruoli o le autorità dell'utente
+                    .authorities(authoritiesList) // Aggiungi qui i ruoli o le autorità dell'utente
                     .build();
         }
     }
