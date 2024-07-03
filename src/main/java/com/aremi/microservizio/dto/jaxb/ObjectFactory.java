@@ -36,5 +36,17 @@ public class ObjectFactory {
         return new GetDipendentiByIdSedeResponse();
     }
 
+    public GetUtenteByEmailRequest createGetUtenteByEmailRequest() {
+        return new GetUtenteByEmailRequest();
+    }
+
+    public GetUtenteResponse createGetUtenteResponse() {
+        return new GetUtenteResponse();
+    }
+
+    public Utente createUtente() {
+        return new Utente();
+    }
+
     // TODO: Aggiungi altri metodi create per altre classi se necessario
 }
